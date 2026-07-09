@@ -1,0 +1,487 @@
+/* ── Details column wrapper — flex:1, centers the card ──────────────────────
+   The outer wrapper takes all remaining space and centers the inner card.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.details-col-outer {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgba(10, 11, 15, 0.98);
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  overflow-y: auto;
+}
+
+.details-col-outer::-webkit-scrollbar {
+  width: 4px;
+}
+
+.details-col-outer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.details-col-outer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* ── Inner card — fixed readable width ───────────────────────────────────── */
+.details-col {
+  width: 100%;
+  max-width: 680px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px;
+  gap: 12px;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.details-empty .details-col {
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   HEADER
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.dh {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.dh-icon {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dh-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2px;
+}
+
+.dh-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.dh-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dh-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dh-variant-badge {
+  font-size: 0.7rem;
+  color: var(--accent-neon);
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dh-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dh-meta-tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 4px;
+  padding: 1px 8px;
+}
+
+.dh-meta-levels {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   DESCRIPTION
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.dh-desc {
+  font-size: 0.875rem;
+  /* 14px — minimum comfortable reading size */
+  color: var(--text-secondary);
+  line-height: 1.55;
+  flex-shrink: 0;
+  max-width: 68ch;
+  /* ~68 chars per line — optimal readability */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GRADE TABS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.grade-tabs {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.grade-tab {
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.grade-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.grade-tab.active {
+  color: var(--accent-neon);
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.3);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   EFFECTS — side-by-side two-column table
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.effects-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.effects-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.eff-col-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+}
+
+.crit-label {
+  color: rgba(255, 200, 60, 0.7);
+}
+
+.effects-rows {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.effect-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.effect-row:last-child {
+  border-bottom: none;
+}
+
+.eff-cell {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  padding: 0 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.eff-cell.crit-cell.changed>span:first-child {
+  color: rgba(255, 210, 70, 0.95);
+}
+
+/* ── Condition info icon + CSS tooltip ───────────────────────────────────── */
+
+.cond-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.cond-icon {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  cursor: default;
+  line-height: 1;
+  transition: color 120ms ease;
+  user-select: none;
+}
+
+.cond-wrap:hover .cond-icon {
+  color: var(--text-secondary);
+}
+
+/* Tooltip — pure CSS, shown on hover of the wrapper.
+   Opens to the LEFT of the icon — always has space since the panel is wide. */
+.cond-tooltip {
+  display: none;
+  position: absolute;
+  right: calc(100% + 6px);
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  background: #1a1d24;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  padding: 8px 11px;
+  min-width: 180px;
+  max-width: 280px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cond-wrap:hover .cond-tooltip {
+  display: flex;
+}
+
+/* Arrow pointing RIGHT toward the icon */
+.cond-tooltip::before {
+  content: '';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: rgba(255, 255, 255, 0.14);
+}
+
+.cond-tooltip::after {
+  content: '';
+  position: absolute;
+  left: calc(100% - 1px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: #1a1d24;
+}
+
+.cond-tooltip-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 2px;
+}
+
+/* Divider between dispellableLabel and conditions */
+.cond-divider {
+  display: block;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 3px 0;
+}
+
+/* ⚑ dispellable label — amber/red depending on severity */
+.cond-line.cond-disp {
+  color: rgba(255, 140, 60, 0.9);
+  font-weight: 600;
+}
+
+/* ── Area badge ──────────────────────────────────────────────────────────── */
+/* Tiny inline badge showing zone shape + size, sits between text and ⓘ icon */
+
+.area-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+  cursor: default;
+  user-select: none;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.area-badge:hover {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cond-line {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ✓ si : state — active condition */
+.cond-line.cond-pos {
+  color: rgba(160, 200, 130, 0.9);
+}
+
+/* ✗ si non : state — negated condition */
+.cond-line.cond-neg {
+  color: var(--text-muted);
+}
+
+/* ⏱ trigger label */
+.cond-line.cond-trig {
+  color: rgba(255, 200, 60, 0.85);
+}
+
+.eff-cell.crit-cell.changed>span:first-child {
+  color: rgba(255, 210, 70, 0.95);
+}
+
+.eff-empty {
+  color: rgba(255, 255, 255, 0.14);
+  font-size: 0.75rem;
+}
+
+.eff-none {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   CHARACTERISTICS — 2-column key-value grid
+   Replaces the unreadable chip design. Each stat is a row:
+   label (left, muted) | value (right, white, bold).
+   Two stats sit side by side per visual row.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.chars-area {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chars-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 2-column grid of stat cells */
+.chars-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 10px;
+}
+
+/* One stat cell: label · value on the same line */
+.char-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+}
+
+/* Targets row spans full width — values can be long */
+.char-row.char-full {
+  grid-column: 1 / -1;
+}
+
+.char-row.char-accent {
+  background: rgba(255, 200, 60, 0.05);
+  border-color: rgba(255, 200, 60, 0.15);
+}
+
+.char-key {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.char-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.char-row.char-accent .char-val {
+  color: rgba(255, 210, 70, 0.95);
+}

@@ -1,0 +1,108 @@
+/* ── Sidebar — image-only class picker ──────────────────────────────────────
+   Fixed narrow column. 2-col grid of class head images, no labels.
+   ~112px wide (2×48px images + gap + padding).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.sidebar {
+  width: 112px;
+  min-width: 112px;
+  height: 100vh;
+  background: rgba(15, 17, 21, 0.97);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── 2-column image grid, scrollable ─────────────────────────────────────── */
+.class-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 8px;
+  overflow-y: auto;
+  flex: 1;
+  align-content: start;
+}
+
+.class-grid::-webkit-scrollbar {
+  width: 3px;
+}
+
+.class-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.class-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* ── Class button — just the image ───────────────────────────────────────── */
+.class-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: none;
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 120ms ease, outline-color 120ms ease, filter 120ms ease;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}
+
+.class-btn:hover {
+  outline-color: rgba(255, 255, 255, 0.45);
+  opacity: 1;
+}
+
+/* Selected — same white ring + dark halo as spell tiles */
+.class-btn.active {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+  filter: brightness(1.15) saturate(1.1);
+  z-index: 2;
+}
+
+.class-btn.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  /* match .class-btn border-radius */
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.75),
+    0 0 16px rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+}
+
+/* Dim siblings when one is active */
+.class-grid:has(.class-btn.active) .class-btn:not(.active):not(:hover) {
+  opacity: 0.45;
+}
+
+/* ── Image fills the button ──────────────────────────────────────────────── */
+.class-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Letter fallback ─────────────────────────────────────────────────────── */
+.class-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: #000;
+}

@@ -1,0 +1,46 @@
+:root {
+  /* Colors */
+  --bg-dark: #0f1115;
+  --bg-surface: rgba(255, 255, 255, 0.03);
+  --bg-surface-hover: rgba(255, 255, 255, 0.06);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-focus: #00e5ff;
+  
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a5b1;
+  --text-muted: #6b7280;
+
+  /* Accents */
+  --accent-neon: #00e5ff;
+  --accent-neon-glow: rgba(0, 229, 255, 0.3);
+  --danger: #ff3d00;
+  
+  /* Spell Elements */
+  --element-earth: #00c853;
+  --element-fire: #ff3d00;
+  --element-water: #2979ff;
+  --element-air: #00e5ff;
+  --element-neutral: #e0e0e0;
+  
+  /* Spacing (4pt scale) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+  
+  /* Effects */
+  --glass-blur: blur(12px);
+  --shadow-glow: 0 0 20px var(--accent-neon-glow);
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}

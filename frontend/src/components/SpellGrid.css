@@ -1,0 +1,73 @@
+/* ── Spell grid column ──────────────────────────────────────────────────────
+   Middle column. Fixed width. Tiles are fixed 42px — 11 rows always fit.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.spell-grid-col {
+  width: 240px;
+  min-width: 240px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 8px 10px 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(15, 17, 21, 0.95);
+  overflow: hidden;
+}
+
+/* ── Class name label ────────────────────────────────────────────────────── */
+.spell-grid-label {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+/* ── Grid: 11 rows, fixed tile size ─────────────────────────────────────── */
+.spell-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Do NOT use flex:1 — rows must NOT stretch */
+}
+
+/* ── One row: 2 pairs ────────────────────────────────────────────────────── */
+.spell-row {
+  display: flex;
+  gap: 8px;
+  /* gap BETWEEN the two pairs */
+  /* No fixed height — tiles are square via aspect-ratio, row sizes itself */
+}
+
+/* ── One pair: base + variant ────────────────────────────────────────────── */
+.spell-pair {
+  display: flex;
+  gap: 2px;
+  /* tiny gap within a pair */
+  flex: 1;
+  position: relative;
+}
+
+/* Subtle left border on variant to reinforce pairing */
+.spell-pair> :last-child {
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.spell-grid-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  padding-top: 40px;
+}

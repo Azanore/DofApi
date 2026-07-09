@@ -1,0 +1,384 @@
+DOFUS Unity class spells — current verified context
+Last updated: 2026-06-09
+Source: dofusdude/dofus3-main GitHub release assets
+
+===============================================================================
+1. Pipeline overview
+===============================================================================
+
+  parse_spells.py  →  spells_clean.json  →  frontend/src/data/spells_clean.json
+
+parse_spells.py reads raw Unity data from DOFUS_DATA_DIR (or %TEMP%, or
+auto-downloads from GitHub). Output: 836 class spells, 19 breeds × 44 each.
+
+Raw files (auto-downloaded to DATA_DIR if missing, also checked in project root):
+  spells.json, spell_levels.json, spell_variants.json, breeds.json, fr.json,
+  spell_states.json, monsters.json
+
+Project-root files (not auto-downloaded — curated manually):
+  effects.json, spell_states.json
+
+After running parse_spells.py, copy output to frontend:
+  copy spells_clean.json frontend\src\data\spells_clean.json
+Then rebuild:
+  cd frontend && npm run build
+
+===============================================================================
+2. Breed / class IDs  (breed 19 does not exist)
+===============================================================================
+
+  1 Feca      2 Osamodas   3 Enutrof    4 Sram      5 Xelor
+  6 Ecaflip   7 Eniripsa   8 Iop        9 Cra      10 Sadida
+ 11 Sacrieur 12 Pandawa   13 Roublard  14 Zobal    15 Steamer
+ 16 Eliotrope 17 Huppermage 18 Ouginak 20 Forgelance
+
+===============================================================================
+3. Unity reference extraction
+===============================================================================
+
+All raw files share the same objectsById / references / RefIds structure.
+extract_refs() maps rid→game_id, collects data objects with len > 1.
+Works for all raw files including spell_states.json (6171 states).
+
+spell_variants.json: spellIds.Array = [baseSpellId, variantSpellId]
+(legacy spell/spellVariant fields also supported as fallback)
+
+===============================================================================
+4. Field mapping: spell top-level
+===============================================================================
+
+  id, ankamaId      ← spell.id                                ✅
+  nameFr            ← spell.nameId → fr.json                  ✅ 100%
+  descriptionFr     ← spell.descriptionId → fr.json           ✅ 100%
+  iconId, imgUrl    ← spell.iconId                            ✅ all verified
+  class.breedId     ← breedSpellsId membership                ✅
+  class.nameFr      ← breed.shortNameId → fr.json             ✅
+  class.imgUrl      ← Head_{breedId*10}-64.png                ✅
+  isVariant         ← spell is second id in spellIds          ✅
+  variantOf         ← first spell id (variants only)          ✅
+  variantSpellId    ← paired spell id                         ✅
+  variantGroupId    ← spell_variants entry id                 ✅
+
+===============================================================================
+5. Field mapping: spell level
+===============================================================================
+
+  id, grade, requiredLevel  ← level fields                    ✅
+  pa                        ← level.apCost                    ✅
+  range.min/max             ← level.minRange / level.range    ✅
+  castsPerTurn              ← level.maxCastPerTurn (0=∞)      ✅
+  castsPerTarget            ← level.maxCastPerTarget (0=∞)    ✅
+  cooldown                  ← level.globalCooldown (0=none)   ✅
+  initialCooldown           ← level.initialCooldown           ✅
+  minCastInterval           ← level.minCastInterval           ✅
+  stackLimit                ← level.maxStack                  ✅
+  criticalRate              ← level.criticalHitProbability    ✅
+  targets                   ← decoded from effect targetMasks ✅ NEW
+
+Bitmask decoded from level.m_flags:
+  lineOfSight      = bit 4   ✅
+  castInLine       = bit 1   ✅
+  requiresFreeCell = bit 8   ✅
+  range.modifiable = bit 64  ✅
+  rawFlags kept for auditability.
+  bit 512 appears in ~88% of levels — meaning unknown, ignored safely.
+  bits 2,16,32,128,256,1024,2048,4096,8192 — meaning unknown, ignored.
+
+===============================================================================
+6. Field mapping: effect
+===============================================================================
+
+  effectId, element/elementId, min/max/value, duration, delay  ✅
+  dispellable                                                   ✅ (raw)
+  dispellableLabel                                              ✅ NEW — decoded
+  targetMask                                                    ✅ (raw, decoded → conditions[])
+  triggers                                                      ✅ (raw, decoded → conditions[])
+  conditions[]                                                  ✅ NEW
+  area.type/shape/size/params                                   ✅ (raw)
+  areaBadge                                                     ✅ NEW — derived from area
+
+  MARKUP CLEANUP FUNCTIONS:
+    _strip_markup(s)   — strips: <color>, </color>, {{spell,...}}→name, {{...}},
+                         <sprite>, <br>
+    _clean_template(t) — same, for fr.json templates before #N substitution
+    format_effect_text() — strips + substitutes #1/#2/#3/#4
+
+  RESOLUTION PIPELINE (in order):
+    1. State-reference (effectIds 950/951/952):
+       value=state_id → state_names[id] → template → replace #3
+    2. Spell-level-reference (effectIds 3792/3793):
+       value=spell_level_id → level_spell_names[id] → parent spell name
+    3. Monster-reference, min field (effectIds 181,405,1008,1011,2796):
+       min=monster_id → monster_names[id]
+    4. Spell-ref, min field (effectIds 281,285,290,291,293,296,792,1017,1019,
+       1036,1045,1160,2160,2794,2935,2960):
+       min=spell_id → spell_names[id] → template → replace #1
+    5. Spell-ref, max field (effectId 406):
+       max=spell_id → spell_names[id] → replace #2
+    6. Normal: effects.json descriptionId → fr.json → format_effect_text()
+    7. Fallback to theoreticalDescriptionId if descriptionId empty
+    8. Guard: bare integer result → return None
+
+  COVERAGE:
+    Total effect lines : 12820
+    Resolved (textFr)  : 12785  (99.7%)
+    Null               :    35  (3792/3793 companion/NPC levels — unresolvable)
+    Raw integers       : 0  ✅   All other checks: 0  ✅
+
+  HOW TO AUDIT AFTER A DATA UPDATE:
+    import re, json
+    spells = json.load(open("spells_clean.json", encoding="utf-8"))
+    patterns = [re.compile(p) for p in [
+        r"<color=", r"\{\{spell,", r"<sprite",
+        r"^\s*-?\d+\s*$", r":\s*\d+\s*$", r"#[1-4](?!\d)"]]
+    for s in spells:
+      for lvl in s.get("levels", []):
+        for e in lvl.get("effects",[])+lvl.get("criticalEffects",[]):
+          t = e.get("textFr") or ""
+          for c in patterns:
+            if c.search(t): print(e["effectId"], repr(t[:80]))
+
+===============================================================================
+7. Conditions system
+===============================================================================
+
+Each effect can carry a `conditions` array emitted by the parser.
+Decoded from targetMask state tokens + triggers.
+
+  conditions[]: list of {type, label, negate}
+    type    = "state" | "trigger"
+    label   = French string
+    negate  = bool (true = "si non")
+
+TRIGGER_LABELS map (49 distinct values → French):
+  "I"   → None (implicit, not shown)
+  "TE"  → "fin tour ennemi"   "TB" → "début de tour"
+  "D"   → "à la mort"         "DM" → "au déplacement"
+  "X"   → "quand touché"      "H"  → "début combat"
+  EOFF<id> → "fin de [state_name]"
+  ... full map in parse_spells.py TRIGGER_LABELS dict
+
+targetMask state tokens:
+  *E<id>/E<id>  → {type:"state", label:name, negate:false}  (required)
+  *e<id>/e<id>  → {type:"state", label:name, negate:true}   (excluded)
+  100% of state tokens in repeated effects resolve to known names.
+
+DEDUPLICATION in deduplicate_effects():
+  1. Fully identical effects → keep one (no conditions)
+  2. Same text, differ only in mask/trigger → keep one, merge conditions
+  3. Same text, differ in area/delay/value → keep all (genuinely separate)
+  277 spells affected, 1190 repeated-text cases. 225 true duplicates deduped.
+
+UI: ⓘ icon + CSS hover tooltip, opens LEFT.
+  ⚑ non dissipable / permanent  → orange
+  ✓ si : [name]                  → green
+  ✗ si non : [name]              → muted
+  ⏱ [trigger label]              → amber
+
+===============================================================================
+8. Element mapping
+===============================================================================
+
+  −1→null  0→Neutre  1→Terre  2→Feu  3→Eau  4→Air  5→Neutre
+
+===============================================================================
+9. Zone shape mapping + areaBadge
+===============================================================================
+
+Raw ZONE_SHAPES codes → type string:
+  0,35,65→point  67,80,97→cercle  42,43,45,81,85,88→croix
+  70,71,76,82,84,108→ligne  86→cône  79→anneau
+
+areaBadge derived at parse time (shown inline with effect text):
+  None      → point / cercle size=0 (single cell — no badge)
+  "⊙ rN"   → cercle radius N          (diamond AoE)
+  "⊙ global"→ cercle size ≥ 10        (map-wide)
+  "＋ rN"   → croix orthogonal cross   (raw≠88)
+  "✕ rN"   → croix diagonal X         (raw=88)
+  "→ N"    → ligne length N
+  "▷ rN"   → cône depth N
+  "○ rN"   → anneau hollow ring
+
+Real data verification:
+  cercle r1  = adjacent cells diamond (buffs/debuffs on self or near)
+  cercle r2  = larger diamond (Sacrifice "Intercepte les dommages")
+  cercle r3  = wide diamond (Transfusion damage around target)
+  cercle r63 = global/map (Sadida Bambouseraie)
+  croix ✕ r1 = diagonal X shape (Furie, Sacrieur attacks)
+  croix ＋ r1 = orthogonal + shape (standard cross AoE)
+  ligne → 2  = 2-cell line away from caster (Carnage)
+  cône ▷ r2  = cone AoE (Souffle Enflammé fire breath)
+  anneau ○ r2= hollow ring radius 2 (Nervosité)
+  Coverage: 99.0% of effects with textFr
+
+===============================================================================
+10. State resolution
+===============================================================================
+
+spell_states.json: 6171 entries, nameId → fr.json → _strip_markup() → name.
+effectId 950 = applies, 951 = removes, 952 = deactivates.
+State sub-effects NOT expanded — name only (matches live client).
+
+===============================================================================
+11. Monster / invocation resolution
+===============================================================================
+
+monsters.json: 5086 entries, nameId → fr.json → _strip_markup() → name.
+level_spell_names: 33726 entries from spells.spellLevels traversal.
+35 companion/NPC level IDs absent → those effects stay null (correct).
+
+MONSTER_REF_MIN_EFFECT_IDS: 181, 405, 1008, 1011, 2796
+SPELL_LEVEL_REF_VALUE_EFFECT_IDS: 3792, 3793
+
+===============================================================================
+12. Spell name reference resolution
+===============================================================================
+
+SPELL_REF_MIN_EFFECT_IDS (min = spell_id):
+  281,285,290,291,293,296,792,1017,1019,1036,1045,1160,2160,2794,2935,2960
+SPELL_REF_MAX_EFFECT_IDS (max = spell_id): 406
+
+===============================================================================
+13. New per-level field: targets
+===============================================================================
+
+targets: French string derived from targetMask letter tokens across all effects.
+Prefers non-caster-only effects (skips pure "C" masks on first pass).
+
+Token map (27 distinct letter codes):
+  A=ennemis          a=alliés           C/c=soi-même
+  g=glyphes          j=invoc. alliées   J=invoc. ennemies
+  T=porteurs         K=portés           r/R=montures
+  U=doubles          p=pièges           h=héros ennemi
+  P=entité spécifique L/M/l/m=invoc. niveaux 1-4
+  H=héros   I=invocations   D/d=mort   s=arbre   O=cible précédente
+  i=invocations propres   x=case vide
+
+Rare tokens (≤8 occurrences each) still decoded where possible.
+Coverage: 100% of levels (1729/1729).
+Examples: "glyphes · ennemis", "alliés · ennemis", "soi-même"
+
+===============================================================================
+14. dispellableLabel
+===============================================================================
+
+Per effect, decoded from dispellable int:
+  1 → None      (standard — omit, don't pollute UI)
+  2 → "non dissipable"   (1038 effects — permanent within fight)
+  3 → "permanent"        (884 effects — unremovable, Sacrieur mechanics etc.)
+Shown as "⚑ [label]" inside the ⓘ tooltip (orange).
+
+===============================================================================
+15. Frontend layout (3-column, no scroll)
+===============================================================================
+
+Col 1 — Sidebar (112px):
+  Image-only class picker, 2-col grid, scrollable.
+  Selection: white ring + dark halo + brightness. Siblings dim 45%.
+  Class = tab (no deselect).
+
+Col 2 — SpellGrid (240px):
+  11 rows × 4 spells (2 pairs per row). No scroll.
+  Pair gap 2px, between-pair gap 8px. Tiles square, icon fills button.
+  Selection: white ring + dark halo + sibling dimming.
+  Clicking selected spell deselects (toggles details panel).
+
+Col 3 — SpellDetailsPanel (flex:1, centered, max-width 680px):
+  Always visible. Empty state = "Sélectionnez un sort".
+
+===============================================================================
+16. SpellDetailsPanel — fields displayed
+===============================================================================
+
+Header:
+  nameFr → h2  |  isVariant+variantOf → "↩ [name]" badge
+  pa → "N PA"  |  range → "X–Y PO"  |  requiredLevel → "Niveaux X/Y"
+
+Description: clamped 3 lines, max 68ch.
+
+Grade tabs: compact pill buttons.
+
+Effects (2-col table, normal left, crit right, row-aligned):
+  textFr        → element-colored
+  areaBadge     → inline zone badge (e.g. "⊙ r2", "✕ r1", "→ 3")
+  conditions +
+  dispellableLabel → ⓘ tooltip (opens left):
+                    ⚑ non dissipable / permanent  (orange, if set)
+                    ✓ si : [state]                (green)
+                    ✗ si non : [state]             (muted)
+                    ⏱ [trigger]                   (amber)
+  Changed crit values → gold color.
+
+Caractéristiques (2-col key-value grid):
+  Cibles        ← targets (full-width row)
+  Lancers/tour  ← castsPerTurn (∞ if 0)
+  Lancers/cible ← castsPerTarget (∞ if 0)
+  Coup critique ← criticalRate (only if > 0, accent gold)
+  Rechargement  ← cooldown (only if > 0)
+  Début combat  ← initialCooldown (only if > 0)
+  Intervalle min← minCastInterval (only if > 0)
+  Cumuls max.   ← stackLimit (only if > 0 and ≠ -1)
+  Ligne de vue  ← always
+  En ligne seul.← castInLine (only if true)
+  Portée modif. ← range.modifiable (only if true)
+  Case libre req← requiresFreeCell (only if true)
+
+Not displayed (raw, available):
+  area.* raw fields (badge derived instead)
+  targetMask raw (decoded into targets + conditions)
+  triggers raw (decoded into conditions)
+  dispellable raw int (label derived instead)
+
+===============================================================================
+17. Data quality
+===============================================================================
+
+  textFr resolved: 12785 / 12820  (99.7%)
+  textFr null    :    35  (companion levels — correct, unresolvable)
+  areaBadge      : 99.0% of effects with textFr
+  targets        : 100% of levels (1729/1729)
+  dispellableLabel: 18.9% of effects (only when ≠ 1)
+  all markup/placeholder/integer checks: 0 ✅
+  nameFr/descFr empty: 0 ✅   imgUrl missing: 0 ✅
+  Duplicate effects deduped: 225 (Pandawa data artifact)
+  Conditions: 947 state tokens decoded, 100% resolution rate
+
+===============================================================================
+18. Verified samples
+===============================================================================
+
+Bond grade 1:
+  4→'Téléporte sur la case ciblée'  areaBadge=None (cercle r0)
+  3793→null (companion level ref, unresolvable)
+  1163→'Dommages subis x110%'
+
+Furie grade 1 (Sacrieur):
+  98→'25 à 27 dommages Air'  areaBadge='✕ r1'  targets='glyphes · ennemis'
+  1171→'2% Dommages finaux (3 tours)'  areaBadge='⊙ r1'
+
+Transhumance (Féca):
+  1026→'Déclenche les glyphes' collapsed ×8 with conditions[]
+  ⓘ: "✗ si non : Terre Battue déclenchée" × 8 glyph states
+
+Berserk (Sacrieur):
+  dispellableLabel='permanent' on '-70% PV' effect → ⚑ in tooltip
+
+Mutilation (Sacrieur):
+  dispellableLabel='non dissipable' on '-10% PV' → ⚑ in tooltip
+
+Conquête:  targets='ennemis'  181→'Invoque : Stratège Iop' ✅
+Sacrifice: targets='glyphes · alliés · entité spécifique'
+Bambouseraie: areaBadge='⊙ global' (cercle size=63)
+
+===============================================================================
+19. Next: PATH 2 roadmap (pending decision)
+===============================================================================
+
+PATH 2 — Fetch referenced documents (new raw files, scoped):
+  Candidates:
+    - State sub-effects: show what "État Saoul" actually does mechanically
+      (medium complexity — needs statesCriterion + effect expansion)
+    - Glyph/trap contents: follow effectId 1165 glyph references
+      (high complexity — separate glyph data may not be in available files)
+  Out of scope: monster stat sheets, script logic, companion data.
+  DECISION: investigate state sub-effect availability before committing.
