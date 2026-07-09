@@ -74,7 +74,15 @@
 
 /* ── Mobile — full-width grid, part of the page's natural scroll ────────────
    Drops the fixed 240px column + 100vh clipping so the grid flows under the
-   sticky class strip. Tiles grow with the viewport (bigger tap targets). */
+   sticky class strip.
+
+   The desktop markup groups tiles into .spell-row (2 pairs) > .spell-pair
+   (base + variant) for a fixed 11-row layout. On mobile that same grouping
+   would force exactly 4 tiles per line — at full phone width that stretches
+   each tile to 80-100px+. Instead we flatten .spell-row/.spell-pair with
+   display:contents (keeps the DOM/pairing CSS, removes their box) so every
+   tile becomes a direct grid item and wraps naturally at a sane, capped
+   size (~56-64px, same ballpark as the desktop tile size). */
 @media (max-width: 767px) {
   .spell-grid-col {
     width: 100%;
@@ -85,11 +93,14 @@
     overflow: visible;
   }
 
-  .spell-row {
-    gap: 12px;
+  .spell-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 8px;
   }
 
+  .spell-row,
   .spell-pair {
-    gap: 4px;
+    display: contents;
   }
 }
