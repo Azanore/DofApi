@@ -175,8 +175,18 @@ export default function SpellDetailsPanel({ spell, onDeselect }) {
   const hasCrits = (lvl?.criticalEffects ?? []).some(e => e.textFr);
 
   return (
-    <div className="details-col-outer">
+    <div className="details-col-outer" role="dialog" aria-modal="true" aria-label={name}>
       <div className="details-col">
+
+        {/* ── Close / back — visible only as an overlay on mobile ── */}
+        <button
+          type="button"
+          className="dh-close"
+          onClick={onDeselect}
+          aria-label="Retour à la liste des sorts"
+        >
+          ← Retour
+        </button>
 
         {/* ── Header ── */}
         <header className="dh">

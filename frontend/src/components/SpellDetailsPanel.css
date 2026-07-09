@@ -47,6 +47,74 @@
   font-size: 0.9rem;
 }
 
+/* ── Close / back button — hidden on desktop (panel is always visible
+   alongside the grid, closing it would leave an empty column); shown as
+   a real back affordance on mobile where the panel covers the screen. ── */
+.dh-close {
+  display: none;
+}
+
+/* ── Mobile — details panel becomes a full-screen overlay ───────────────────
+   Only the populated state (not .details-empty) is rendered as an overlay;
+   the empty state is hidden entirely so mobile Screen 1 (class strip + grid)
+   isn't obstructed when nothing is selected yet. */
+@media (max-width: 767px) {
+  .details-col-outer.details-empty {
+    display: none;
+  }
+
+  .details-col-outer {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    z-index: 50;
+    border-left: none;
+    background: var(--bg-dark);
+    animation: details-slide-in 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .details-col-outer {
+      animation: none;
+    }
+  }
+
+  @keyframes details-slide-in {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+
+  .details-col {
+    max-width: none;
+    padding: 16px 16px 32px;
+  }
+
+  .dh-close {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    /* Comfortable ≥44px tap target */
+    min-height: 40px;
+  }
+
+  .dh-close:hover,
+  .dh-close:focus-visible {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.09);
+  }
+}
+
 /* ════════════════════════════════════════════════════════════════════════════
    HEADER
    ════════════════════════════════════════════════════════════════════════════ */

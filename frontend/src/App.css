@@ -1,4 +1,6 @@
-/* ── Root 3-column layout ──────────────────────────────────────────────────── */
+/* ── Root 3-column layout (desktop & tablet, ≥768px) ─────────────────────────
+   Sidebar (112px) + spell grid (240px) leaves ample room for the details
+   column even at 768px, so the 3-pane layout holds down to tablet width. */
 .app-container {
   display: flex;
   height: 100vh;
@@ -14,4 +16,18 @@
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-light);
   border-radius: 12px;
+}
+
+/* ── Mobile (<768px) — single scrolling column, drill-down navigation ───────
+   Below 768px three side-by-side panes can't fit readable content, so the
+   layout becomes: sticky class strip → spell grid → full-screen detail
+   overlay (shown/hidden purely via the existing selectedSpell state). */
+@media (max-width: 767px) {
+  .app-container {
+    flex-direction: column;
+    height: 100dvh;
+    width: 100vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 }

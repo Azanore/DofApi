@@ -71,3 +71,25 @@
   font-style: italic;
   padding-top: 40px;
 }
+
+/* ── Mobile — full-width grid, part of the page's natural scroll ────────────
+   Drops the fixed 240px column + 100vh clipping so the grid flows under the
+   sticky class strip. Tiles grow with the viewport (bigger tap targets). */
+@media (max-width: 767px) {
+  .spell-grid-col {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    border-right: none;
+    padding: 12px;
+    overflow: visible;
+  }
+
+  .spell-row {
+    gap: 12px;
+  }
+
+  .spell-pair {
+    gap: 4px;
+  }
+}

@@ -25,6 +25,17 @@ function App() {
     }
   }, [classes, selectedClass]);
 
+  // Escape closes the spell details overlay (matters most on mobile,
+  // where it's a full-screen panel rather than an always-visible column).
+  useEffect(() => {
+    if (!selectedSpell) return;
+    const onKeyDown = e => {
+      if (e.key === 'Escape') setSelectedSpell(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedSpell]);
+
   // Pairs: [[base, variant], [base, variant], …]  (22 pairs × 2 = 44)
   const spellPairs = useMemo(() => {
     if (!selectedClass) return [];

@@ -106,3 +106,41 @@
   font-size: 1rem;
   color: #000;
 }
+
+/* ── Mobile — sticky horizontal class strip ──────────────────────────────────
+   Sidebar flips from a fixed vertical 2-col column into a full-width,
+   single-row, horizontally scrollable strip pinned to the top of the page. */
+@media (max-width: 767px) {
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .class-grid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 8px;
+    padding: 10px 12px;
+    scroll-snap-type: x proximity;
+  }
+
+  .class-grid::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .class-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+}
