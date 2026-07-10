@@ -69,46 +69,72 @@ ZONE_SHAPES = {
 # ── Trigger event label mapping ───────────────────────────────────────────────
 # Maps raw trigger codes to short French labels shown in the UI.
 # Compound triggers (A|B) are split and each token looked up individually.
-TRIGGER_LABELS: dict[str, str] = {
+# Maps raw trigger codes to (short French label, uncertain) shown in the UI.
+# Compound triggers (A|B) are split and each token looked up individually.
+# "uncertain=True" = best-effort interpretation, not fully confirmed — the
+# UI marks these with a small "†".
+#
+# Corrected several outright-wrong prior guesses, found by cross-referencing
+# Ankama's own descriptionFr against real effect context:
+#   - DE/DF/DW/DA were "au téléport ennemi"/"fin effet"/"quand poussé loin"/
+#     "quand attiré" (four unrelated concepts) but all four appear together
+#     in "Bouclier Élémentaire", one per elemental resistance line — they're
+#     clearly "D" + English element initial ("dégâts [Terre/Feu/Eau/Air]
+#     subis"). DN (Neutral) was missing entirely; added it on the same basis.
+#   - DM was "au déplacement" but its only real example is a damage-reflect
+#     effect ("Couronne d'Épines" — renvoie 100% des dommages subis) — "DM"
+#     reads as "Dégâts" not "Déplacement".
+#   - TE was "fin tour ennemi" but its example ("Libation") heals the CASTER
+#     at the end of the caster's own next turn — narrowed to "fin de tour".
+#   - PT ("traverse un portail") was entirely unmapped despite clear evidence
+#     in "Coalition" ("soigne la cible lorsqu'elle traverse un portail").
+TRIGGER_LABELS: dict[str, tuple[str, bool] | None] = {
     "I":    None,           # on cast — implicit, don't show
-    "TE":   "fin tour ennemi",
-    "TB":   "début de tour",
-    "D":    "à la mort",
-    "DM":   "au déplacement",
-    "X":    "quand touché",
-    "H":    "début combat",
-    "PD":   "fin combat",
-    "DBE":  "en esquive",
-    "DIS":  "quand poussé",
-    "DR":   "fin du glyphe",
-    "MA":   "attaque mortelle",
-    "CC":   "coup critique",
-    "CPT":  "coup critique",
-    "CCMPARR": "CC ou parade",
-    "MS":   "fin de l'état",
-    "DA":   "quand attiré",
-    "DE":   "au téléport ennemi",
-    "DF":   "fin effet",
-    "DW":   "quand poussé loin",
-    "MPA":  "retrait de PA",
-    "TP":   "au téléport",
-    "M":    "au déplacement",
-    "V":    "quand vu",
-    "VA":   "attaqué à distance",
-    "VM":   "touché en mêlée",
-    "VE":   "esquivé",
-    "LPU":  "perte PV",
-    "DTB":  "début tour allié",
-    "DTE":  "début tour ennemi",
-    "DV":   "fin de vie",
-    "CPT":  "coup critique",
-    "DIS|DR": "poussé/fin glyphe",
-    "DIS|DM": "poussé/déplacé",
-    "DM|XDM": "déplacé",
-    "PD|XPD": "fin combat",
-    "TB|XDTB": "début de tour",
-    "D|XD": "à la mort",
-    "MPA|M|TP": "PA retiré/dépl.",
+    "TE":   ("fin de tour", True),
+    "TB":   ("début de tour", False),
+    "D":    ("sur attaque subie", True),
+    "DM":   ("dégâts subis", True),
+    "X":    ("quand touché", True),
+    "H":    ("début combat", True),
+    "PD":   ("fin combat", True),
+    "DBE":  ("esquive / embuscade", True),
+    "DIS":  ("quand poussé", True),
+    "DR":   ("désenvoûtement", True),
+    "MA":   ("attaque mortelle", True),
+    "CC":   ("coup critique", False),
+    "CPT":  ("coup critique", True),
+    "CCMPARR": ("critique ou parade", True),
+    "CMPARR": ("parade", True),
+    "MS":   ("fin de l'état", True),
+    "DA":   ("dégâts Air subis", False),
+    "DE":   ("dégâts Terre subis", False),
+    "DF":   ("dégâts Feu subis", False),
+    "DW":   ("dégâts Eau subis", False),
+    "DN":   ("dégâts Neutre subis", False),
+    "DIS|DR": ("poussé / désenvoûté", True),
+    "DIS|DM": ("poussé / dégâts subis", True),
+    "DM|XDM": ("dégâts subis", True),
+    "PD|XPD": ("fin combat", True),
+    "TB|XDTB": ("début de tour", False),
+    "D|XD": ("sur attaque subie", True),
+    "I|TB": ("début de tour", False),
+    "MPA":  ("retrait de PA", True),
+    "TP":   ("au téléport", True),
+    "PT":   ("traverse un portail", False),
+    "M":    ("au déplacement", True),
+    "V":    ("quand vu", True),
+    "VA":   ("attaqué à distance", True),
+    "VM":   ("touché en mêlée", True),
+    "VE":   ("esquivé", True),
+    "LPU":  ("perte de PV", True),
+    "DTB":  ("début tour allié", True),
+    "DTE":  ("début tour ennemi", True),
+    "DV":   ("fin de vie", True),
+    "DT":   ("condition spéciale", True),
+    "PO":   ("condition spéciale", True),
+    "CPD":  ("condition spéciale", True),
+    "CMPAS": ("cible affectée par état lié", True),
+    "MPA|M|TP": ("PA retiré / déplacement / téléport", True),
 }
 
 # ── Dispellable label mapping ─────────────────────────────────────────────────
@@ -120,34 +146,50 @@ DISPELLABLE_LABELS: dict[int, str | None] = {
 }
 
 # ── targetMask letter-token → French target label ─────────────────────────────
-TARGET_TOKENS: dict[str, str] = {
-    "A":  "ennemis",
-    "a":  "alliés",
-    "C":  "soi-même",
-    "c":  "soi-même",
-    "g":  "glyphes",
-    "j":  "invocations alliées",
-    "J":  "invocations ennemies",
-    "T":  "porteurs",
-    "K":  "portés",
-    "r":  "montures",
-    "R":  "montures",
-    "U":  "doubles",
-    "p":  "pièges",
-    "h":  "héros ennemi",
-    "P":  "entité spécifique",
-    "L":  "invocations (niv.1)",
-    "M":  "invocations (niv.2)",
-    "l":  "invocations (niv.3)",
-    "m":  "invocations (niv.4)",
-    "H":  "héros",
-    "I":  "invocations",
-    "D":  "mort",
-    "d":  "mort allié",
-    "s":  "arbre",
-    "O":  "cible précédente",
-    "i":  "invocations propres",
-    "x":  "case vide",
+# ── targetMask letter-token → (French label, uncertain) ───────────────────────
+# "uncertain=True" means the label is a best-effort interpretation that could
+# not be fully confirmed against real spell text — the UI marks these with a
+# small "†" so people don't mistake an educated guess for verified fact.
+#
+# Confirmed via cross-referencing Ankama's own descriptionFr/textFr against
+# isolated or narrow-context token usage (see /docs/label-audit.md for the
+# full research notes). Corrected several outright-wrong prior guesses:
+#   - h was "héros ennemi" but only ever observed applying buffs to the
+#     caster's OWN freshly-summoned creature — clearly an ally-side token.
+#   - T/r/R were "porteurs"/"montures" but only ever co-occur with
+#     teleport/portal mechanics (Xélor téléfrag, Eliotrope portails).
+#   - O was "cible précédente" but every example is about the target's
+#     *attacker* (retaliation-style effects), not a previous target.
+TARGET_TOKENS: dict[str, tuple[str, bool]] = {
+    "A":  ("ennemis", False),
+    "a":  ("alliés", False),
+    "C":  ("soi-même", False),
+    "c":  ("soi-même", False),
+    "g":  ("glyphes", False),
+    "j":  ("invocation alliée", False),
+    "J":  ("invocation ennemie", False),
+    "s":  ("arbre", False),
+    "p":  ("pièges", False),
+    "i":  ("invocation du lanceur", True),
+    "K":  ("cible projetée", True),
+    "U":  ("invocation à instance unique", True),
+    "P":  ("entité désignée (état lié)", True),
+    "T":  ("téléportation", True),
+    "r":  ("portails", True),
+    "R":  ("portails", True),
+    "O":  ("attaquant(s) de la cible", True),
+    "h":  ("entité alliée liée", True),
+    # Confirmed as a family (all co-occur in "bonus vs invocations" spells)
+    # but the precise sub-category each letter denotes is unconfirmed.
+    "L":  ("invocation (catégorie 1)", True),
+    "M":  ("invocation (catégorie 2)", True),
+    "l":  ("invocation (catégorie 3)", True),
+    "m":  ("invocation (catégorie 4)", True),
+    "H":  ("invocation (catégorie spéciale)", True),
+    "I":  ("invocation (générique)", True),
+    "D":  ("catégorie spéciale (non confirmée)", True),
+    "d":  ("catégorie spéciale, alliée (non confirmée)", True),
+    "x":  ("objet invocable", True),
 }
 
 # ── Area visual badge strings ─────────────────────────────────────────────────
@@ -186,6 +228,7 @@ def decode_targets(mask: str) -> str | None:
     Decode the primary target tokens from a targetMask string into French.
     Returns a compact string like "ennemis · alliés" or None if trivial/unknown.
     Ignores state/entity filter tokens (E/e/F/f prefixed).
+    Uncertain labels (unconfirmed against real spell text) get a trailing "†".
     """
     if not mask:
         return None
@@ -196,10 +239,14 @@ def decode_targets(mask: str) -> str | None:
         # Skip state/entity refs
         if re.match(r'^[EeFf]\d+', tok):
             continue
-        label = TARGET_TOKENS.get(tok)
-        if label and label not in used:
-            seen.append(label)
-            used.add(label)
+        entry = TARGET_TOKENS.get(tok)
+        if not entry:
+            continue
+        label, uncertain = entry
+        display = f"{label}\u2009†" if uncertain else label
+        if display not in used:
+            seen.append(display)
+            used.add(display)
     return " · ".join(seen) if seen else None
 FLAG_LINE_OF_SIGHT = 4
 FLAG_REQUIRES_FREE_CELL = 8
@@ -680,13 +727,18 @@ def decode_conditions(
     Decode targetMask state tokens and triggers into human-readable French condition strings.
 
     Returns a list of condition strings, e.g.:
-      ["si Glyphe de Feu", "fin tour ennemi"]
+      ["si Glyphe de Feu", "fin de tour"]
 
     Only non-trivial conditions are returned:
       - triggers='I' (on cast) is omitted — it's the default, not a condition
       - state tokens common to ALL effects in a group are omitted (done at group level)
+
+    Uncertain labels (unconfirmed against real spell text) get a trailing "†".
     """
     conditions: list[str] = []
+
+    def _mark(label: str, uncertain: bool) -> str:
+        return f"{label}\u2009†" if uncertain else label
 
     # ── Trigger label ─────────────────────────────────────────────────────────
     trig = (effect.get("triggers") or "").strip()
@@ -698,14 +750,21 @@ def decode_conditions(
                 conditions.append(f"fin de {state_names[sid]}")
             else:
                 conditions.append("fin d'effet")
+        # Handle EON<id> — state onset trigger (state applied)
+        elif trig.startswith("EON"):
+            sid = int(trig[3:]) if trig[3:].isdigit() else None
+            if sid and sid in state_names:
+                conditions.append(f"application de {state_names[sid]}\u2009†")
+            else:
+                conditions.append("application d'un état\u2009†")
         else:
-            label = TRIGGER_LABELS.get(trig)
-            if label:
-                conditions.append(label)
+            entry = TRIGGER_LABELS.get(trig)
+            if entry:
+                conditions.append(_mark(*entry))
             elif "|" in trig:
                 # Try to decode compound triggers
                 parts = [TRIGGER_LABELS.get(t.strip()) for t in trig.split("|")]
-                decoded = [p for p in parts if p]
+                decoded = [_mark(*p) for p in parts if p]
                 if decoded:
                     conditions.append(" / ".join(decoded))
 

@@ -108,6 +108,31 @@ function buildChips(lvl) {
   return rows;
 }
 
+// ── UncertainLabel — renders a label, styling a trailing "†" (uncertain
+// interpretation, from the label-audit pass) as its own hoverable mark ──────
+
+const UNCERTAIN_MARK = '\u2009†';
+
+function UncertainLabel({ text }) {
+  if (!text || !text.includes(UNCERTAIN_MARK)) return text;
+  const parts = text.split(UNCERTAIN_MARK).filter(Boolean);
+  return (
+    <>
+      {parts.map((p, i) => (
+        <span key={i}>
+          {p}
+          <span
+            className="uncertain-mark"
+            title="Sens exact non confirmé — meilleure interprétation possible d'après l'analyse des données du jeu."
+          >
+            †
+          </span>
+        </span>
+      ))}
+    </>
+  );
+}
+
 // ── ConditionTags — ⓘ icon with CSS-only hover tooltip ───────────────────────
 
 function ConditionTags({ conditions, dispellableLabel }) {
@@ -132,7 +157,7 @@ function ConditionTags({ conditions, dispellableLabel }) {
             key={i}
             className={`cond-line ${c.type === 'trigger' ? 'cond-trig' : c.negate ? 'cond-neg' : 'cond-pos'}`}
           >
-            {c.type === 'trigger' ? `⏱ ${c.label}` : c.negate ? `✗ si non : ${c.label}` : `✓ si : ${c.label}`}
+            {c.type === 'trigger' ? <>⏱ <UncertainLabel text={c.label} /></> : c.negate ? <>✗ si non : <UncertainLabel text={c.label} /></> : <>✓ si : <UncertainLabel text={c.label} /></>}
           </span>
         ))}
       </span>
@@ -307,10 +332,15 @@ export default function SpellDetailsPanel({ spell, onDeselect }) {
               {chips.map((c, i) => (
                 <div key={i} className={`char-row${c.accent ? ' char-accent' : ''}${c.full ? ' char-full' : ''}`}>
                   <span className="char-key">{c.key}</span>
-                  <strong className="char-val">{c.val}</strong>
+                  <strong className="char-val"><UncertainLabel text={c.val} /></strong>
                 </div>
               ))}
             </div>
+            {chips.some(c => c.val?.includes(UNCERTAIN_MARK)) && (
+              <p className="uncertain-legend">
+                <span className="uncertain-mark">†</span> sens non confirmé — meilleure interprétation
+              </p>
+            )}
           </div>
         )}
 

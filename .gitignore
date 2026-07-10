@@ -16,3 +16,12 @@ __pycache__/
 
 # Node (root level, if any)
 node_modules/
+
+# Raw dofusdude release files — downloaded transiently by parse_spells.py,
+# not meant to be committed (167MB+, regenerated on demand)
+/breeds.json
+/fr.json
+/monsters.json
+/spell_levels.json
+/spell_variants.json
+/spells.json

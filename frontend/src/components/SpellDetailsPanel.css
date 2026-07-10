@@ -553,3 +553,31 @@
 .char-row.char-accent .char-val {
   color: rgba(255, 210, 70, 0.95);
 }
+
+/* ── Uncertain-label mark ────────────────────────────────────────────────────
+   A small "†" appended to labels whose real meaning couldn't be fully
+   confirmed against Ankama's own text during the label-audit pass (see
+   parse_spells.py TARGET_TOKENS / TRIGGER_LABELS comments for the research
+   notes). Kept visually quiet — it's a footnote, not a warning. */
+.uncertain-mark {
+  display: inline-block;
+  margin-left: 1px;
+  color: var(--uncertain-amber);
+  font-weight: 700;
+  cursor: help;
+  opacity: 0.85;
+}
+
+.char-val .uncertain-mark,
+.cond-line .uncertain-mark {
+  font-size: 0.9em;
+}
+
+.uncertain-legend {
+  margin: 8px 2px 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
