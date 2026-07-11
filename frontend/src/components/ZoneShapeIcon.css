@@ -1,0 +1,35 @@
+.zsi-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.zsi-cell {
+  rx: 1.5px;
+}
+
+.zsi-cell--empty {
+  fill: rgba(255, 255, 255, 0.03);
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 0.5;
+}
+
+.zsi-cell--hit {
+  fill: var(--accent-neon-glow);
+  stroke: var(--accent-neon);
+  stroke-width: 0.75;
+  opacity: 0.85;
+}
+
+.zsi-cell--origin {
+  fill: var(--accent-neon);
+  stroke: var(--text-primary);
+  stroke-width: 0.75;
+}
+
+.zsi-cell--global {
+  fill: var(--accent-neon-glow);
+  stroke: var(--accent-neon);
+  stroke-width: 0.5;
+  opacity: 0.55;
+}

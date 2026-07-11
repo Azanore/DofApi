@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import spellsData from '../data/spells_clean.json';
+import ZoneShapeIcon, { zoneCaption } from './ZoneShapeIcon';
 import './SpellDetailsPanel.css';
 
 const spellNameById = Object.fromEntries(spellsData.map(s => [s.id, s.nameFr]));
@@ -130,6 +131,23 @@ function UncertainLabel({ text }) {
         </span>
       ))}
     </>
+  );
+}
+
+// ── AreaBadge — square-grid zone icon + compact text caption ────────────────
+// Reads the raw {type, shape, size} area object directly (no backend
+// change needed — geometry is computed client-side, see ZoneShapeIcon.jsx).
+
+function AreaBadge({ area }) {
+  if (!area || !area.type) return null;
+  const caption = zoneCaption(area.type, area.size, area.shape);
+  if (!caption) return null; // single-cell hit, nothing worth showing
+
+  return (
+    <span className="area-badge" title={`Zone : ${caption}`}>
+      <ZoneShapeIcon type={area.type} shape={area.shape} size={area.size} className="area-badge-icon" />
+      <span className="area-badge-text">{caption}</span>
+    </span>
   );
 }
 
@@ -283,11 +301,7 @@ export default function SpellDetailsPanel({ spell, onDeselect }) {
                       <span style={row.normal ? { color: elementColor(row.normal.elementId) } : undefined}>
                         {row.normal?.textFr ?? <span className="eff-empty">—</span>}
                       </span>
-                      {row.normal?.areaBadge && (
-                        <span className="area-badge" title={`Zone : ${row.normal.areaBadge}`}>
-                          {row.normal.areaBadge}
-                        </span>
-                      )}
+                      {row.normal?.area && <AreaBadge area={row.normal.area} />}
                       {(row.normal?.conditions?.length > 0 || row.normal?.dispellableLabel) && (
                         <ConditionTags
                           conditions={row.normal.conditions}
@@ -302,11 +316,7 @@ export default function SpellDetailsPanel({ spell, onDeselect }) {
                         <span style={row.crit ? { color: elementColor(row.crit.elementId) } : undefined}>
                           {row.crit?.textFr ?? <span className="eff-empty">—</span>}
                         </span>
-                        {row.crit?.areaBadge && (
-                          <span className="area-badge" title={`Zone : ${row.crit.areaBadge}`}>
-                            {row.crit.areaBadge}
-                          </span>
-                        )}
+                        {row.crit?.area && <AreaBadge area={row.crit.area} />}
                         {(row.crit?.conditions?.length > 0 || row.crit?.dispellableLabel) && (
                           <ConditionTags
                             conditions={row.crit.conditions}

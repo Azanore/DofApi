@@ -415,11 +415,14 @@
 }
 
 /* ── Area badge ──────────────────────────────────────────────────────────── */
-/* Tiny inline badge showing zone shape + size, sits between text and ⓘ icon */
+/* Tiny inline badge showing zone shape + size, sits between text and ⓘ icon.
+   Now pairs a small square-grid icon (ZoneShapeIcon) with a text caption —
+   Dofus is cell-based, so the icon is drawn from squares, never dots/circles. */
 
 .area-badge {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   font-size: 0.65rem;
   font-family: var(--font-display);
   font-weight: 600;
@@ -427,7 +430,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 3px;
-  padding: 1px 5px;
+  padding: 1px 6px 1px 3px;
   white-space: nowrap;
   flex-shrink: 0;
   letter-spacing: 0.3px;
@@ -439,6 +442,16 @@
 .area-badge:hover {
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.09);
+}
+
+.area-badge-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.area-badge-text {
+  line-height: 1;
 }
 
 .cond-line {

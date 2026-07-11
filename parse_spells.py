@@ -195,31 +195,32 @@ TARGET_TOKENS: dict[str, tuple[str, bool]] = {
 # ── Area visual badge strings ─────────────────────────────────────────────────
 # Returns a compact string like "⊕ r2" or "＋ r1" — None for trivial zones.
 def area_badge(area: dict[str, Any]) -> str | None:
+    """
+    Compact text caption for a zone (e.g. "zone r2", "croix r1"). Exported
+    alongside the raw area {type, shape, size} object, which the frontend
+    uses to render an actual square-grid icon (Dofus is cell-based — no
+    dot/circle glyphs here, even in this plain-text fallback).
+    """
     atype = area.get("type")
     size  = area.get("size") or 0
     shape = area.get("shape")
 
-    if not atype or atype == "point":
-        return None
+    if not atype or atype == "point" or size == 0:
+        return None          # single-cell hit, no badge needed
+    if size >= 10:
+        return "zone globale"   # map-wide (size=63 etc.)
     if atype == "cercle":
-        if size == 0:
-            return None          # single-cell hit, no badge needed
-        if size >= 10:
-            return "⊙ global"   # map-wide (size=63 etc.)
-        # raw shape 88/X = diagonal cross — not a circle despite ZONE_SHAPES mapping
-        if shape == 88:
-            return f"✕ r{size}"
-        return f"⊙ r{size}"
+        return f"zone r{size}"
     if atype == "croix":
-        if shape == 88:         # X diagonal
-            return f"✕ r{size}"
-        return f"＋ r{size}"
+        if shape == 88:      # X diagonal
+            return f"croix (X) r{size}"
+        return f"croix r{size}"
     if atype == "ligne":
-        return f"→ {size}"
+        return f"ligne r{size}"
     if atype == "cône":
-        return f"▷ r{size}"
+        return f"cône r{size}"
     if atype == "anneau":
-        return f"○ r{size}"
+        return f"anneau r{size}"
     return None
 
 
